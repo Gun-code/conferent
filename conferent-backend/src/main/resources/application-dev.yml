@@ -1,0 +1,45 @@
+# 개발환경 프로필 - H2 내장 DB 사용
+spring:
+  datasource:
+    url: jdbc:h2:mem:conferent;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+
+# 개발환경 Swagger 설정 (더 자세한 정보 표시)
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    try-it-out-enabled: true
+    display-request-duration: true
+    display-operation-id: true
+  show-actuator: true
+
+# 개발용 로깅 레벨
+logging:
+  level:
+    com.conferent: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# 개발 서버 포트
+server:
+  port: 8080 

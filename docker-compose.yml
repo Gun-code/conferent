@@ -1,0 +1,34 @@
+services:
+  # 백엔드 서비스 (프로필에 따라 DB 선택)
+  backend:
+    build: 
+      context: ./conferent-backend
+      dockerfile: Dockerfile
+    container_name: conferent-backend
+    environment:
+      # 프로필을 환경변수로 설정 (기본값: dev)
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+    ports:
+      - "8080:8080"
+    # 호스트 네트워크에 접근할 수 있도록 설정
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # 프론트엔드 서비스
+  frontend:
+    build:
+      context: ./conferent-frontend
+      dockerfile: Dockerfile
+    container_name: conferent-frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  default:
+    name: conferent-network 
