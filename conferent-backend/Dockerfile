@@ -4,8 +4,15 @@ FROM gradle:8.5-jdk17-alpine as builder
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 빌드 스크립트와 소스 코드 복사
-COPY build.gradle .
+# Gradle 캐시를 위한 의존성 파일 복사
+COPY build.gradle settings.gradle ./
+COPY gradle gradle
+COPY gradlew ./
+
+# 의존성 다운로드 (캐시 레이어 분리)
+RUN gradle dependencies --no-daemon
+
+# 소스 코드 복사
 COPY src src
 
 # 빌드 실행

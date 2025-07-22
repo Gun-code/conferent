@@ -7,8 +7,8 @@ WORKDIR /app
 # package.json과 package-lock.json 복사
 COPY package*.json ./
 
-# 의존성 설치 (빌드에 필요한 devDependencies 포함)
-RUN npm ci
+# 의존성 설치 (캐시 레이어 분리)
+RUN npm ci --only=production && npm cache clean --force
 
 # 소스 코드 복사
 COPY . .
