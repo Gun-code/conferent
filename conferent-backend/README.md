@@ -2,93 +2,6 @@
 
 Java + Spring Boot 기반의 회의실 예약 시스템 백엔드 API입니다.
 
-## 📁 모듈 구조
-
-### Domain 모듈 (`conferent-domain`)
-핵심 비즈니스 로직과 도메인 규칙을 담당합니다.
-
-```
-conferent-domain/
-├── entities/
-│   ├── User.java              # 사용자 엔티티
-│   ├── Room.java              # 회의실 엔티티
-│   └── Reservation.java       # 예약 엔티티
-├── repositories/              # 리포지토리 인터페이스
-├── services/                  # 도메인 서비스
-└── valueobjects/
-    └── ReservationTime.java   # 예약 시간 값 객체
-```
-
-**주요 특징:**
-- 외부 의존성 없음 (순수 Java)
-- 비즈니스 규칙과 불변식 구현
-- 도메인 이벤트 처리
-
-### Application 모듈 (`conferent-application`)
-애플리케이션의 유스케이스를 정의합니다.
-
-```
-conferent-application/
-├── usecases/
-│   ├── reservation/
-│   │   ├── CreateReservationUseCase.java
-│   │   └── CancelReservationUseCase.java
-│   └── room/
-│       ├── CreateRoomUseCase.java
-│       └── GetRoomsUseCase.java
-└── dto/                       # 데이터 전송 객체
-```
-
-**주요 특징:**
-- 트랜잭션 경계 정의
-- 도메인 오케스트레이션
-- 외부 서비스 호출 조정
-
-### Interface 모듈 (`conferent-interface`)
-외부와의 통신을 담당하는 REST API입니다.
-
-```
-conferent-interface/
-└── api/
-    ├── ReservationController.java
-    ├── RoomController.java
-    └── UserController.java
-```
-
-**주요 특징:**
-- HTTP 요청/응답 처리
-- 입력 유효성 검증
-- 예외 처리 및 응답 변환
-
-### Infrastructure 모듈 (`conferent-infrastructure`)
-데이터베이스, 외부 서비스 등 인프라스트럭처 관련 구현체입니다.
-
-```
-conferent-infrastructure/
-├── persistence/
-│   ├── entity/                # JPA 엔티티
-│   ├── UserRepositoryImpl.java
-│   ├── RoomRepositoryImpl.java
-│   └── ReservationRepositoryImpl.java
-└── notification/
-    └── WebPushNotificationService.java
-```
-
-**주요 특징:**
-- JPA를 통한 데이터 영속화
-- 도메인 객체 ↔ JPA 엔티티 변환
-- 외부 알림 서비스 구현
-
-### Main 모듈 (`conferent-main`)
-애플리케이션의 진입점이자 실행 가능한 JAR를 생성합니다.
-
-```
-conferent-main/
-├── ConferentApplication.java  # Spring Boot 메인 클래스
-└── resources/
-    └── application.yml        # 설정 파일
-```
-
 ## 🔧 빌드 및 실행
 
 ### 요구사항
@@ -125,152 +38,152 @@ java -jar conferent-main/build/libs/conferent-main-1.0.0.jar
 ./gradlew :conferent-domain:test
 ```
 
-## 📊 API 엔드포인트
+### Swagger
 
-### 회의실 관리
-- `GET /api/rooms` - 회의실 목록 조회
-- `GET /api/rooms?minCapacity=10` - 최소 수용인원으로 필터링
-- `POST /api/rooms` - 회의실 생성 (관리자만)
+API 문서화 및 테스트를 위한 Swagger UI가 제공됩니다.
 
-### 예약 관리
-- `POST /api/reservations` - 예약 생성
-- `DELETE /api/reservations/{id}` - 예약 취소
-- `GET /api/reservations/user/{userId}` - 사용자별 예약 목록
+#### 접속 방법
+- **개발환경**: http://localhost:8080/swagger-ui.html
+- **운영환경**: http://localhost:8080/swagger-ui.html
 
-### 요청/응답 예시
+#### 주요 기능
+- **API 문서 자동 생성**: 컨트롤러의 어노테이션 기반
+- **인터랙티브 테스트**: 브라우저에서 직접 API 호출 가능
+- **요청/응답 스키마**: JSON 형태로 자동 문서화
+- **API 그룹화**: 도메인별로 API 분류
 
-#### 예약 생성
+#### 사용 예시
 ```bash
-curl -X POST http://localhost:8080/api/reservations \
-  -H "Content-Type: application/json" \
-  -H "User-Id: 1" \
-  -d '{
-    "roomId": 1,
-    "startTime": "2024-01-15T09:00:00",
-    "endTime": "2024-01-15T10:00:00",
-    "purpose": "팀 미팅"
-  }'
-```
+# 회의실 목록 조회
+GET /api/rooms
 
-#### 응답
-```json
+# 예약 생성
+POST /api/rents
 {
-  "id": 1,
-  "userId": 1,
-  "roomId": 1,
-  "roomName": "대회의실",
-  "startTime": "2024-01-15T09:00:00",
-  "endTime": "2024-01-15T10:00:00",
+  "startTime": "2024-01-15T10:00:00",
+  "endTime": "2024-01-15T12:00:00",
   "purpose": "팀 미팅",
-  "status": "PENDING",
-  "createdAt": "2024-01-14T15:30:00",
-  "updatedAt": "2024-01-14T15:30:00"
+  "description": "주간 스크럼 미팅",
+  "roomIds": [1, 2],
+  "inviteeIds": [3, 4, 5]
 }
 ```
 
-## 🗄️ 데이터베이스 스키마
+### H2
 
-### Users 테이블
+개발환경에서 사용하는 인메모리 데이터베이스입니다.
+
+#### 접속 방법
+- **H2 콘솔**: http://localhost:8080/h2-console
+- **JDBC URL**: `jdbc:h2:mem:conferent`
+- **사용자명**: `SA`
+- **비밀번호**: (비어있음)
+
+#### 더미 데이터
+애플리케이션 시작 시 자동으로 다음 데이터가 로드됩니다:
+
+- **사용자**: 8명 (관리자 1명, 일반 사용자 7명)
+- **회의실**: 8개 (대회의실, 소회의실, 브레인스토밍룸 등)
+- **예약**: 17개 (오늘부터 일주일간)
+- **초대**: 25개 (다양한 상태의 초대 데이터)
+
+#### 데이터 확인 방법
 ```sql
-CREATE TABLE users (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    role VARCHAR(20) NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
-);
+-- 사용자 목록 조회
+SELECT * FROM users;
+
+-- 회의실 목록 조회
+SELECT * FROM rooms;
+
+-- 예약 목록 조회
+SELECT r.*, u.name as creator_name 
+FROM rents r 
+JOIN users u ON r.user_id = u.id;
+
+-- 초대 목록 조회
+SELECT ui.*, u.name as user_name, r.name as room_name
+FROM user_invites ui
+JOIN users u ON ui.user_id = u.id
+JOIN room_rents rr ON ui.room_rent_id = rr.id
+JOIN rooms r ON rr.room_id = r.id;
 ```
 
-### Rooms 테이블
-```sql
-CREATE TABLE rooms (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    location VARCHAR(255) NOT NULL,
-    capacity INT NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
-);
+
+## 📁 디렉터리 구조
+
 ```
+conferent/
+├── entities/
+│   ├── Room.java                # 회의실 엔티티
+│   ├── User.java                # 사용자 엔티티
+│   ├── Rent.java                # 예약 엔티티 (기본 예약 정보)
+│   ├── RoomRent.java            # 회의실-예약 N:M 연결
+│   └── UserInvite.java          # 예약-초대된 사용자 N:M 연결
+│
+├── repositories/
+│   ├── room/
+│   │   ├── RoomRepository.java
+│   │   └── RoomRepositoryImpl.java
+│   ├── user/
+│   │   ├── UserRepository.java
+│   │   └── UserRepositoryImpl.java
+│   ├── rent/
+│       ├── RentRepository.java
+│       ├── RentRepositoryImpl.java
+│       ├── RoomRentRepository.java
+│       ├── RoomRentRepositoryImpl.java
+│       ├── UserInviteRepository.java
+│       └── UserInviteRepositoryImpl.java
+│
+├── services/
+│   ├── room/
+│   │   ├── RoomService.java
+│   │   └── impl/
+│   │       └── RoomServiceImpl.java
+│   ├── user/
+│   │   ├── UserService.java
+│   │   └── impl/
+│   │       └── UserServiceImpl.java
+│   ├── rent/
+│   │   ├── RentService.java
+│   │   ├── RoomRentService.java
+│   │   ├── InvitationService.java
+│   │   └── impl/
+│   │       ├── RentServiceImpl.java
+│   │       ├── RoomRentServiceImpl.java
+│   │       └── InvitationServiceImpl.java
+│
+├── controllers/
+│   ├── room/
+│   │   └── RoomController.java
+│   ├── user/
+│   │   └── UserController.java
+│   └── rent/
+│       ├── RentController.java
+│       ├── RoomRentController.java
+│       └── InvitationController.java
+│
+├── dtos/
+│   ├── room/
+│   │   ├── RoomRequest.java
+│   │   └── RoomResponse.java
+│   ├── user/
+│   │   ├── UserRequest.java
+│   │   └── UserResponse.java
+│   └── rent/
+│       ├── CreateRentRequest.java
+│       ├── RentResponse.java
+│       ├── InviteUserRequest.java
+│       └── InviteeResponse.java
+│
+├── enums/
+│   ├── Role.java                # USER, ADMIN
+│   └── InviteStatus.java       # PENDING, ACCEPTED, DECLINED
+│
+└── exceptions/
+    ├── NotFoundException.java
+    ├── DuplicateReservationException.java
+    └── GlobalExceptionHandler.java
 
-### Reservations 테이블
-```sql
-CREATE TABLE reservations (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    room_id BIGINT NOT NULL,
-    start_time TIMESTAMP NOT NULL,
-    end_time TIMESTAMP NOT NULL,
-    purpose TEXT NOT NULL,
-    status VARCHAR(20) NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (room_id) REFERENCES rooms(id)
-);
+
 ```
-
-## 🏗️ 아키텍처 원칙
-
-### 의존성 방향
-```
-Main → Interface → Application → Domain
-           ↓            ↓
-    Infrastructure → Domain
-```
-
-### 주요 패턴
-- **Repository Pattern**: 데이터 접근 추상화
-- **Use Case Pattern**: 애플리케이션 로직 캡슐화
-- **Domain Service Pattern**: 복잡한 도메인 로직 처리
-- **Value Object Pattern**: 불변 값 객체 구현
-
-## 🔒 보안 고려사항
-
-### 현재 구현
-- 간단한 헤더 기반 사용자 식별 (`User-Id` 헤더)
-- 기본적인 권한 검증 (예약 소유자 확인)
-
-### 추후 개선 방향
-- JWT 기반 인증/인가
-- Spring Security 적용
-- OAuth 2.0 소셜 로그인
-- API Rate Limiting
-
-## 📈 성능 최적화
-
-### 적용된 최적화
-- JPA 지연 로딩 전략
-- 적절한 인덱스 설정
-- 트랜잭션 범위 최소화
-
-### 추후 개선 방향
-- 쿼리 최적화 (N+1 문제 해결)
-- 캐싱 전략 (Redis)
-- 데이터베이스 커넥션 풀 튜닝
-
-## 🧪 테스트 전략
-
-### 단위 테스트
-- 도메인 로직 테스트
-- 유스케이스 테스트
-- 리포지토리 테스트
-
-### 통합 테스트
-- API 엔드포인트 테스트
-- 데이터베이스 연동 테스트
-
-### 테스트 실행
-```bash
-# 도메인 로직 테스트
-./gradlew :conferent-domain:test
-
-# 애플리케이션 로직 테스트
-./gradlew :conferent-application:test
-
-# API 테스트
-./gradlew :conferent-interface:test
-``` 

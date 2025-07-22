@@ -17,10 +17,16 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+    defer-datasource-initialization: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
+  
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data-h2.sql
 
 # 개발환경 Swagger 설정 (더 자세한 정보 표시)
 springdoc:
