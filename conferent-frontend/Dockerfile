@@ -13,8 +13,8 @@ RUN npm install
 # 소스 코드 복사
 COPY . .
 
-# 빌드 (JavaScript, production 모드)
-RUN npm run build
+# 빌드 (npx 사용으로 권한 문제 해결)
+RUN npx vite build
 
 # 런타임 스테이지 - Nginx 사용
 FROM nginx:alpine
