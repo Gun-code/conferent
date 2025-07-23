@@ -36,4 +36,10 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
      */
     @Query("SELECT r FROM Room r ORDER BY r.name")
     List<Room> findAllOrderByName();
+
+    /**
+     * 이용 가능한 회의실 조회
+     */
+    @Query("SELECT r FROM Room r WHERE r.available = true")
+    List<Room> findByAvailableTrue();
 } 

@@ -68,4 +68,10 @@ public interface RoomRentRepository extends JpaRepository<RoomRent, Long> {
     List<RoomRent> findConflictingReservations(@Param("roomId") Long roomId, 
                                               @Param("startTime") LocalDateTime startTime, 
                                               @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 이용 가능한 회의실 조회
+     */
+    @Query("SELECT rr FROM RoomRent rr WHERE rr.room.id NOT IN (SELECT rr2.room.id FROM RoomRent rr2 WHERE rr2.rent.startTime <= :endTime AND rr2.rent.endTime >= :startTime)")
+    List<RoomRent> findByAvailableRoom(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 } 

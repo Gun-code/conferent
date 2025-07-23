@@ -19,6 +19,14 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     
+    // Spring Security (인증/권한 관리)
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    
+    // JWT 토큰 처리를 위한 라이브러리
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+    
     // Database
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.3.2'
     runtimeOnly 'com.h2database:h2'
@@ -32,6 +40,7 @@ dependencies {
     
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

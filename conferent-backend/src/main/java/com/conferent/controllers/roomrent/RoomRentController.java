@@ -185,4 +185,18 @@ public class RoomRentController {
         RoomRentResponse roomRent = RoomRentResponse.from(roomRentService.findByRentIdAndRoomId(rentId, roomId));
         return ResponseEntity.ok(roomRent);
     }
+
+    
+    @GetMapping("/available")
+    @Operation(summary = "이용 가능한 회의실 조회", description = "현재 이용 가능한 회의실 목록을 조회합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = RoomRentResponse.class)))
+    })
+    public ResponseEntity<List<RoomRentResponse>> getAvailableRooms() {
+        List<RoomRentResponse> rooms = roomRentService.getAvailableRooms().stream()
+                .map(RoomRentResponse::from)
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(rooms);
+    }
 } 

@@ -51,4 +51,5 @@ public interface RoomService {
      * 회의실 존재 여부 확인
      */
     boolean existsRoom(Long id);
+
 } 

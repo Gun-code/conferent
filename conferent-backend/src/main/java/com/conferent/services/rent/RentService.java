@@ -72,4 +72,9 @@ public interface RentService {
      * 시간 충돌 검사 (기존 예약 제외)
      */
     boolean hasTimeConflict(List<Long> roomIds, LocalDateTime startTime, LocalDateTime endTime, Long excludeRentId);
+
+    /**
+     * 최근 예약 조회
+     */
+    List<RentResponse> getRecentRents(Long userId);
 } 

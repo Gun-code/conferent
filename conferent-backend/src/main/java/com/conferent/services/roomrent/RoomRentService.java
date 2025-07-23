@@ -63,4 +63,9 @@ public interface RoomRentService {
      * 특정 예약과 회의실의 연결 조회
      */
     RoomRent findByRentIdAndRoomId(Long rentId, Long roomId);
+
+    /**
+     * 이용 가능한 회의실 조회
+     */
+    List<RoomRent> getAvailableRooms();
 } 

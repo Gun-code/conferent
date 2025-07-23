@@ -290,4 +290,14 @@ public class RentServiceImpl implements RentService {
         }
         return rent;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RentResponse> getRecentRents(Long userId) {
+        //현재 ~ 미래 예약만 조회
+        return rentRepository.findByCreatorIdAndStartTimeAfterOrderByStartTimeDesc(userId, LocalDateTime.now())
+                .stream()
+                .map(this::convertToRentResponse)
+                .collect(Collectors.toList());
+    }
 } 

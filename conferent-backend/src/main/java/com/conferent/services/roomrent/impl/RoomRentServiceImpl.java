@@ -102,4 +102,11 @@ public class RoomRentServiceImpl implements RoomRentService {
         return roomRent.orElseThrow(() -> 
             new NotFoundException("회의실-예약 연결을 찾을 수 없습니다. Rent ID: " + rentId + ", Room ID: " + roomId));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoomRent> getAvailableRooms() {
+        // 현재 사용중인 회의실을 제외한 회의실 조회
+        return roomRentRepository.findByAvailableRoom(LocalDateTime.now(), LocalDateTime.now().plusHours(1));
+    }
 } 

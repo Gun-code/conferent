@@ -1,0 +1,19 @@
+/* 메인 CSS 엔트리 포인트 */
+
+/* 공통 스타일 */
+@import './common/reset.css';
+@import './common/variables.css';
+@import './common/typography.css';
+@import './common/utilities.css';
+@import './common/animations.css';
+
+/* 레이아웃 스타일 */
+@import './layouts/user-layout.css';
+
+/* 페이지별 스타일 */
+@import './pages/home.css';
+@import './pages/rooms.css';
+@import './pages/reservations.css';
+@import './pages/users.css';
+@import './pages/admin.css';
+@import './pages/auth.css'; 

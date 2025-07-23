@@ -1,0 +1,48 @@
+services:
+  # Nginx 리버스 프록시
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: conferent-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+  # 백엔드 서비스 (프로덕션용 - 로컬 빌드)
+  backend:
+    build: 
+      context: ./conferent-backend
+      dockerfile: Dockerfile.prod  # 경량 Dockerfile 사용
+    container_name: conferent-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: prod  # 프로덕션 환경
+    expose:
+      - "8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # 프론트엔드 서비스 (프로덕션용 - 로컬 빌드)
+  frontend:
+    build:
+      context: ./conferent-frontend
+      dockerfile: Dockerfile.prod  # 경량 Dockerfile 사용
+    container_name: conferent-frontend
+    environment:
+      VITE_API_BASE_URL: https://your-domain.com/api  # 실제 도메인으로 변경
+    expose:
+      - "3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  default:
+    name: conferent-network 

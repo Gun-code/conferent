@@ -1,0 +1,16 @@
+# EC2 프리티어용 경량 Dockerfile
+# 로컬에서 빌드된 dist 폴더 사용
+
+FROM nginx:alpine
+
+# 로컬에서 빌드된 파일 복사
+COPY dist /usr/share/nginx/html
+
+# Nginx 설정 복사
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# 포트 노출
+EXPOSE 3000
+
+# Nginx 실행
+CMD ["nginx", "-g", "daemon off;"] 

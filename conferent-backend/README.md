@@ -52,22 +52,6 @@ API 문서화 및 테스트를 위한 Swagger UI가 제공됩니다.
 - **요청/응답 스키마**: JSON 형태로 자동 문서화
 - **API 그룹화**: 도메인별로 API 분류
 
-#### 사용 예시
-```bash
-# 회의실 목록 조회
-GET /api/rooms
-
-# 예약 생성
-POST /api/rents
-{
-  "startTime": "2024-01-15T10:00:00",
-  "endTime": "2024-01-15T12:00:00",
-  "purpose": "팀 미팅",
-  "description": "주간 스크럼 미팅",
-  "roomIds": [1, 2],
-  "inviteeIds": [3, 4, 5]
-}
-```
 
 ### H2
 
@@ -86,27 +70,6 @@ POST /api/rents
 - **회의실**: 8개 (대회의실, 소회의실, 브레인스토밍룸 등)
 - **예약**: 17개 (오늘부터 일주일간)
 - **초대**: 25개 (다양한 상태의 초대 데이터)
-
-#### 데이터 확인 방법
-```sql
--- 사용자 목록 조회
-SELECT * FROM users;
-
--- 회의실 목록 조회
-SELECT * FROM rooms;
-
--- 예약 목록 조회
-SELECT r.*, u.name as creator_name 
-FROM rents r 
-JOIN users u ON r.user_id = u.id;
-
--- 초대 목록 조회
-SELECT ui.*, u.name as user_name, r.name as room_name
-FROM user_invites ui
-JOIN users u ON ui.user_id = u.id
-JOIN room_rents rr ON ui.room_rent_id = rr.id
-JOIN rooms r ON rr.room_id = r.id;
-```
 
 
 ## 📁 디렉터리 구조

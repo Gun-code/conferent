@@ -157,4 +157,17 @@ public class RentController {
         boolean hasConflict = rentService.hasTimeConflict(roomIds, startTime, endTime);
         return ResponseEntity.ok(hasConflict);
     }
+
+    @GetMapping("/recent")
+    @Operation(summary = "최근 예약 조회", description = "최근 예약들을 조회합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = RentResponse.class)))
+    })
+    public ResponseEntity<List<RentResponse>> getRecentRents(
+            @Parameter(description = "사용자 ID", example = "1")
+            @RequestParam Long userId) {
+        List<RentResponse> rents = rentService.getRecentRents(userId);
+        return ResponseEntity.ok(rents);
+    }
 } 

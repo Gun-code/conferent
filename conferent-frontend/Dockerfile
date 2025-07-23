@@ -1,5 +1,8 @@
 # 멀티 스테이지 빌드
-FROM node:18 as builder
+FROM node:18-alpine as builder
+
+# 빌드 도구 설치
+RUN apk add --no-cache python3 make g++
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -7,14 +10,14 @@ WORKDIR /app
 # package.json과 package-lock.json 복사
 COPY package*.json ./
 
-# 의존성 설치 (캐시 레이어 분리)
-RUN npm ci --only=production && npm cache clean --force
+# 의존성 설치
+RUN npm ci
 
 # 소스 코드 복사
 COPY . .
 
-# 빌드 (직접 vite 실행)
-RUN node node_modules/vite/bin/vite.js build
+# 빌드
+RUN npm run build
 
 # 런타임 스테이지 - Nginx 사용
 FROM nginx:alpine

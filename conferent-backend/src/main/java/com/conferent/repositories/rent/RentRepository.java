@@ -62,4 +62,10 @@ public interface RentRepository extends JpaRepository<Rent, Long> {
      */
     @Query("SELECT r FROM Rent r JOIN r.roomRents rr WHERE rr.room.id = :roomId AND r.startTime < :endTime AND r.endTime > :startTime")
     List<Rent> findConflictingRentsByRoomId(@Param("roomId") Long roomId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 특정 사용자의 현재 ~ 미래 예약 조회
+     */
+    @Query("SELECT r FROM Rent r WHERE r.creator.id = :userId AND r.startTime >= :now ORDER BY r.startTime DESC")
+    List<Rent> findByCreatorIdAndStartTimeAfterOrderByStartTimeDesc(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 } 

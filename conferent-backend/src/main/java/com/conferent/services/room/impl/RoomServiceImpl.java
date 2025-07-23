@@ -76,7 +76,7 @@ public class RoomServiceImpl implements RoomService {
         room.setLocation(request.getLocation());
         room.setCapacity(request.getCapacity());
         room.setDescription(request.getDescription());
-        
+                
         Room savedRoom = roomRepository.save(room);
         return RoomResponse.from(savedRoom);
     }
@@ -95,8 +95,7 @@ public class RoomServiceImpl implements RoomService {
         existingRoom.setName(request.getName());
         existingRoom.setLocation(request.getLocation());
         existingRoom.setCapacity(request.getCapacity());
-        existingRoom.setDescription(request.getDescription());
-        
+        existingRoom.setDescription(request.getDescription());        
         Room updatedRoom = roomRepository.save(existingRoom);
         return RoomResponse.from(updatedRoom);
     }
@@ -114,4 +113,5 @@ public class RoomServiceImpl implements RoomService {
     public boolean existsRoom(Long id) {
         return roomRepository.existsById(id);
     }
+
 } 

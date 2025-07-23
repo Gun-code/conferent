@@ -1,0 +1,38 @@
+# 운영환경 프로필 - 호스트 머신의 MariaDB 사용
+spring:
+  datasource:
+    # Docker에서 호스트의 localhost에 접근
+    url: jdbc:mariadb://host.docker.internal:3306/conferent?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: conferent_user
+    password: conferent_password
+    driver-class-name: org.mariadb.jdbc.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+        format_sql: true
+
+# 운영환경 Swagger 설정 (제한적)
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    try-it-out-enabled: false  # 운영환경에서는 실행 비활성화
+    display-request-duration: false
+  show-actuator: false
+
+# 운영용 로깅 레벨
+logging:
+  level:
+    com.conferent: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+
+# 운영 서버 포트
+server:
+  port: 8080 
