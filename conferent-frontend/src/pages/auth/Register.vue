@@ -1,6 +1,5 @@
 <template>
-  <UserLayout>
-    <div class="register">
+  <div class="register">
       <div class="register__container">
         <div class="register__card">
           <div class="register__header">
@@ -94,22 +93,19 @@
         </div>
       </div>
     </div>
-  </UserLayout>
 </template>
 
 <script>
-import UserLayout from '@/layouts/UserLayout.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
+import { useAuthStore } from '@/store/authStore.js'
 
 export default {
   name: 'Register',
   components: {
-    UserLayout,
     BaseButton
   },
   data() {
     return {
-      loading: false,
       form: {
         name: '',
         email: '',
@@ -119,6 +115,14 @@ export default {
       }
     }
   },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    loading() {
+      return this.authStore.loading
+    }
+  },
   methods: {
     async handleSubmit() {
       if (this.form.password !== this.form.confirmPassword) {
@@ -126,20 +130,27 @@ export default {
         return
       }
 
-      this.loading = true
-      
       try {
-        // 실제로는 API 호출
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // authStore의 register 액션 사용
+        await this.authStore.register({
+          name: this.form.name,
+          email: this.form.email,
+          password: this.form.password,
+          role: 'USER'
+        })
         
         // 회원가입 성공 후 로그인 페이지로 이동
         alert('회원가입이 완료되었습니다. 로그인해주세요.')
         this.$router.push('/login')
       } catch (err) {
-        alert('회원가입에 실패했습니다.')
         console.error('Register failed:', err)
-      } finally {
-        this.loading = false
+        if (err.response?.status === 409) {
+          alert('이미 존재하는 이메일입니다.')
+        } else if (err.response?.status === 400) {
+          alert('입력 정보를 확인해주세요.')
+        } else {
+          alert('회원가입에 실패했습니다. 다시 시도해주세요.')
+        }
       }
     }
   }

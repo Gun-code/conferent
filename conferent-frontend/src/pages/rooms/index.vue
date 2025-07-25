@@ -1,6 +1,5 @@
 <template>
-  <UserLayout>
-    <div class="room-list">
+  <div class="room-list">
       <div class="room-list__header">
         <h1 class="room-list__title">회의실 목록</h1>
         <BaseButton 
@@ -108,18 +107,15 @@
         </div>
       </div>
     </div>
-  </UserLayout>
 </template>
 
 <script>
-import UserLayout from '@/layouts/UserLayout.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import { roomApiClient } from '@/api'
 
 export default {
   name: 'RoomList',
   components: {
-    UserLayout,
     BaseButton
   },
   data() {
@@ -162,7 +158,7 @@ export default {
       this.error = null
       
       try {
-        const response = await roomApiClient.getAllRooms()
+        const response = await roomApiClient.getAll()
         this.rooms = response.data
       } catch (err) {
         this.error = '회의실 목록을 불러오는데 실패했습니다.'
@@ -191,7 +187,7 @@ export default {
     async handleDeleteRoom(room) {
       if (confirm(`정말로 "${room.name}" 회의실을 삭제하시겠습니까?`)) {
         try {
-          await roomApiClient.deleteRoom(room.id)
+          await roomApiClient.delete(room.id)
           this.rooms = this.rooms.filter(r => r.id !== room.id)
         } catch (err) {
           alert('회의실 삭제에 실패했습니다.')

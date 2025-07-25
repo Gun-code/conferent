@@ -1,8 +1,7 @@
 <template>
-  <UserLayout>
     <div class="reservation-list">
       <div class="reservation-list__header">
-        <h1 class="reservation-list__title">예약 목록</h1>
+        <h1 class="reservation-list__title">내 예약</h1>
         <BaseButton 
           variant="primary" 
           @click="handleCreateReservation"
@@ -55,7 +54,16 @@
       </div>
 
       <div v-else-if="filteredReservations.length === 0" class="reservation-list__empty">
-        <p>조건에 맞는 예약이 없습니다.</p>
+        <p v-if="filters.status || filters.date">조건에 맞는 예약이 없습니다.</p>
+        <p v-else>아직 예약한 회의가 없습니다.</p>
+        <BaseButton 
+          v-if="!filters.status && !filters.date"
+          variant="primary" 
+          @click="handleCreateReservation"
+          class="mt-4"
+        >
+          첫 예약 만들기
+        </BaseButton>
       </div>
 
       <div v-else class="reservation-list__grid">
@@ -113,19 +121,19 @@
         </div>
       </div>
     </div>
-  </UserLayout>
 </template>
 
 <script>
-import UserLayout from '@/layouts/UserLayout.vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
 import { rentApiClient } from '@/api'
 import { formatDate } from '@/utils/date'
+import { useAuthStore } from '@/store/authStore.js'
 
 export default {
   name: 'ReservationList',
   components: {
-    UserLayout,
+
     BaseButton
   },
   data() {
@@ -140,6 +148,14 @@ export default {
     }
   },
   computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    currentUserId() {
+      const userId = this.authStore.userId
+      console.log('Current user ID:', userId)
+      return userId
+    },
     filteredReservations() {
       let filtered = [...this.reservations]
       
@@ -161,13 +177,33 @@ export default {
   mounted() {
     this.loadReservations()
   },
+  watch: {
+    currentUserId: {
+      handler(newUserId) {
+        if (newUserId) {
+          this.loadReservations()
+        }
+      },
+      immediate: true
+    }
+  },
   methods: {
     async loadReservations() {
+      // 사용자 ID가 없으면 로딩하지 않음
+      if (!this.currentUserId) {
+        console.warn('User ID not available, skipping reservation load')
+        return
+      }
+      
+      console.log('Loading reservations for user ID:', this.currentUserId)
+      
       this.loading = true
       this.error = null
       
       try {
-        const response = await rentApiClient.getAllRents()
+        // 현재 사용자의 예약만 가져오기
+        const response = await rentApiClient.getByCreator(this.currentUserId)
+        console.log('Reservations response:', response.data)
         this.reservations = response.data
       } catch (err) {
         this.error = '예약 목록을 불러오는데 실패했습니다.'
@@ -210,13 +246,15 @@ export default {
     },
     
     canEdit(reservation) {
-      // 예약자 본인이거나 관리자인 경우에만 수정 가능
-      return reservation.status === 'PENDING' || reservation.status === 'CONFIRMED'
+      // 예약자 본인인 경우에만 수정 가능 (내 예약 페이지이므로)
+      return reservation.creatorId === this.currentUserId && 
+             (reservation.status === 'PENDING' || reservation.status === 'CONFIRMED')
     },
     
     canCancel(reservation) {
-      // 예약자 본인이거나 관리자인 경우에만 취소 가능
-      return reservation.status === 'PENDING' || reservation.status === 'CONFIRMED'
+      // 예약자 본인인 경우에만 취소 가능 (내 예약 페이지이므로)
+      return reservation.creatorId === this.currentUserId && 
+             (reservation.status === 'PENDING' || reservation.status === 'CONFIRMED')
     },
     
     handleCreateReservation() {
@@ -234,7 +272,7 @@ export default {
     async handleCancelReservation(reservation) {
       if (confirm(`정말로 이 예약을 취소하시겠습니까?`)) {
         try {
-          await rentApiClient.cancelRent(reservation.id)
+          await rentApiClient.delete(reservation.id)
           this.loadReservations() // 목록 새로고침
         } catch (err) {
           alert('예약 취소에 실패했습니다.')

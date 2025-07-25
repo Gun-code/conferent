@@ -105,8 +105,10 @@ public class RoomRentServiceImpl implements RoomRentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoomRent> getAvailableRooms() {
-        // 현재 사용중인 회의실을 제외한 회의실 조회
-        return roomRentRepository.findByAvailableRoom(LocalDateTime.now(), LocalDateTime.now().plusHours(1));
+    public List<Room> getAvailableRooms() {
+        // 현재 시간부터 1시간 후까지 사용 가능한 회의실 조회
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime oneHourLater = now.plusHours(1);
+        return roomRentRepository.findAvailableRooms(now, oneHourLater);
     }
 } 

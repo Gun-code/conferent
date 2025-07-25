@@ -58,7 +58,8 @@ ssh -i $KEYFILE $USER@$SERVER "cd ~/conferent && docker-compose -f docker-compos
 ssh -i $KEYFILE $USER@$SERVER "cd ~/conferent && docker-compose -f docker-compose.prod.yml up --build -d"
 
 echo "✅ 배포 완료!"
-echo "🌐 서비스 접속: http://$SERVER"
+echo "🌐 서비스 접속: https://conferent.duckdns.org"
+echo "📝 주의: EC2 IP($SERVER)로는 HTTP 접속만 가능합니다."
 
 # 6. 서비스 상태 확인
 echo "📊 서비스 상태 확인 중..."

@@ -1,22 +1,42 @@
 <template>
-  <UserLayout>
+  <div class="home">
     <!-- Hero Section - 미니멀한 디자인 -->
     <section class="hero">
       <div class="hero__container">
         <div class="hero__content">
           <h1 class="hero__title">
-            스마트한 회의실 예약
+            <template v-if="authStore.isAuthenticated">
+              안녕하세요, {{ authStore.userName }}님!
+            </template>
+            <template v-else>
+              스마트한 회의실 예약
+            </template>
           </h1>
           <p class="hero__subtitle">
-            간단하고 빠른 회의실 예약으로 더 효율적인 업무 환경을 만들어보세요
+            <template v-if="authStore.isAuthenticated">
+              오늘도 효율적인 회의를 위한 완벽한 공간을 찾아보세요
+            </template>
+            <template v-else>
+              간단하고 빠른 회의실 예약으로 더 효율적인 업무 환경을 만들어보세요
+            </template>
           </p>
           <div class="hero__actions">
-            <router-link to="/rooms" class="hero__cta hero__cta--primary">
-              회의실 둘러보기
-            </router-link>
-            <router-link to="/reservations/create" class="hero__cta hero__cta--secondary">
-              바로 예약하기
-            </router-link>
+            <template v-if="authStore.isAuthenticated">
+              <router-link to="/rooms" class="hero__cta hero__cta--primary">
+                회의실 둘러보기
+              </router-link>
+              <router-link to="/reservations/create" class="hero__cta hero__cta--secondary">
+                바로 예약하기
+              </router-link>
+            </template>
+            <template v-else>
+              <router-link to="/login" class="hero__cta hero__cta--primary">
+                로그인하기
+              </router-link>
+              <router-link to="/register" class="hero__cta hero__cta--secondary">
+                회원가입
+              </router-link>
+            </template>
           </div>
         </div>
         <div class="hero__visual">
@@ -165,17 +185,19 @@
         </router-link>
       </div>
     </section>
-  </UserLayout>
+  </div>
 </template>
 
 <script>
-import UserLayout from '@/layouts/UserLayout.vue'
-import { roomApiClient, rentApiClient, roomRentApiClient } from '@/api'
+import { roomApiClient, rentApiClient, roomRentApiClient, userApiClient } from '@/api'
+import { useAuthStore } from '@/store/authStore.js'
 
 export default {
   name: 'Home',
-  components: {
-    UserLayout
+  computed: {
+    authStore() {
+      return useAuthStore()
+    }
   },
   data() {
     return {
@@ -212,12 +234,13 @@ export default {
     async loadStats() {
       try {
         // 실제로는 별도 API 엔드포인트에서 통계 데이터를 가져옴
-        const roomsResponse = await roomApiClient.getAllRooms()
+        const roomsResponse = await roomApiClient.getAll()
         this.stats.totalRooms = roomsResponse.data.length
         
-        const today = new Date().toISOString().split('T')[0]
-        const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        const reservationsResponse = await rentApiClient.getRentsByDateRange(today, tomorrow)
+        const today = new Date().toISOString().slice(0, 19)  // "2025-07-25T00:00:00"
+        const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 19)  // "2025-07-26T00:00:00"
+        console.log('Date range request:', { today, tomorrow })
+        const reservationsResponse = await rentApiClient.getByDateRange(today, tomorrow)
         this.stats.todayReservations = reservationsResponse.data.length
         
         // 현재 시간 기준으로 이용 가능한 회의실 계산
@@ -270,7 +293,7 @@ export default {
           return;
         }
         
-        const response = await rentApiClient.getRecentRents(userId)
+        const response = await rentApiClient.getRecent(userId)
         this.recentReservations = response.data || []
       } catch (err) {
         console.error('Failed to load recent reservations:', err)

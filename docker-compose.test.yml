@@ -1,0 +1,66 @@
+services:
+  # MariaDB 데이터베이스
+  mariadb:
+    image: mariadb:10.11
+    container_name: conferent-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: conferent
+      MYSQL_USER: conferent_user
+      MYSQL_PASSWORD: conferent_password
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+
+  # 백엔드 서비스 (개발/로컬 테스트용 - 핫 리로드 지원)
+  backend:
+    build: 
+      context: ./conferent-backend
+      dockerfile: Dockerfile.test
+    container_name: conferent-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+    ports:
+      - "8080:8080"
+    volumes:
+      # 소스 코드 변경 시 자동 리로드
+      - ./conferent-backend/src:/app/src
+      - ./conferent-backend/build.gradle:/app/build.gradle
+      - ./conferent-backend/gradle:/app/gradle
+    depends_on:
+      - mariadb
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # 프론트엔드 서비스 (개발/로컬 테스트용 - 핫 리로드 지원)
+  frontend:
+    build:
+      context: ./conferent-frontend
+      dockerfile: Dockerfile.test
+    container_name: conferent-frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080/api
+    ports:
+      - "3000:3000"
+    volumes:
+      # 소스 코드 변경 시 자동 리로드
+      - ./conferent-frontend/src:/app/src
+      - ./conferent-frontend/public:/app/public
+      - ./conferent-frontend/index.html:/app/index.html
+      - ./conferent-frontend/vite.config.js:/app/vite.config.js
+      - ./conferent-frontend/tailwind.config.js:/app/tailwind.config.js
+      - ./conferent-frontend/package.json:/app/package.json
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
+
+networks:
+  default:
+    name: conferent-network 

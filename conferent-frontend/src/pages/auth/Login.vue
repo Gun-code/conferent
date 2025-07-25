@@ -1,12 +1,21 @@
 <template>
-  <UserLayout>
-    <div class="login">
+  <div class="login">
       <div class="login__container">
         <div class="login__card">
           <div class="login__header">
             <h1 class="login__title">로그인</h1>
             <p class="login__subtitle">계정에 로그인하여 회의실을 예약하세요</p>
           </div>
+
+          <!-- 에러 알림 -->
+          <BaseAlert
+            v-if="showError"
+            :show="showError"
+            type="error"
+            :message="errorMessage"
+            @close="clearError"
+            class="mb-4"
+          />
 
           <form class="login__form" @submit.prevent="handleSubmit">
             <div class="form-group">
@@ -66,49 +75,72 @@
         </div>
       </div>
     </div>
-  </UserLayout>
 </template>
 
 <script>
-import UserLayout from '@/layouts/UserLayout.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
+import BaseAlert from '@/components/base/BaseAlert.vue'
+import { useAuthStore } from '@/store/authStore.js'
 
 export default {
   name: 'Login',
   components: {
-    UserLayout,
-    BaseButton
+    BaseButton,
+    BaseAlert
   },
   data() {
     return {
-      loading: false,
       form: {
         email: '',
         password: '',
         remember: false
+      },
+      showError: false,
+      errorMessage: ''
+    }
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    loading() {
+      return this.authStore.loading
+    }
+  },
+  watch: {
+    'authStore.error'(newError) {
+      if (newError) {
+        this.showError = true
+        this.errorMessage = newError
       }
     }
   },
   methods: {
     async handleSubmit() {
-      this.loading = true
+      // 에러 초기화
+      this.showError = false
+      this.errorMessage = ''
+      this.authStore.clearError()
       
       try {
-        // 실제로는 API 호출
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // authStore의 login 액션 사용
+        await this.authStore.login({
+          email: this.form.email,
+          password: this.form.password
+        })
         
-        // 토큰 저장 (실제로는 API 응답에서 받아옴)
-        localStorage.setItem('token', 'mock-token')
-        localStorage.setItem('userRole', 'USER')
-        
-        // 홈으로 이동
+        // 로그인 성공 시 홈으로 이동
         this.$router.push('/')
       } catch (err) {
-        alert('로그인에 실패했습니다.')
+        // 에러는 authStore에서 처리되므로 여기서는 추가 처리하지 않음
         console.error('Login failed:', err)
-      } finally {
-        this.loading = false
       }
+    },
+    
+    clearError() {
+      this.showError = false
+      this.errorMessage = ''
+      this.authStore.clearError()
     }
   }
 }

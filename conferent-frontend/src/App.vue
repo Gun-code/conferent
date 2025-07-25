@@ -1,12 +1,57 @@
 <template>
   <div id="app">
-    <router-view />
+    <!-- 역할에 따른 동적 레이아웃 -->
+    <component :is="currentLayout">
+      <router-view />
+    </component>
   </div>
 </template>
 
 <script>
+import { useAuthStore } from '@/store/authStore.js'
+import AdminLayout from '@/layouts/AdminLayout.vue'
+import UserLayout from '@/layouts/UserLayout.vue'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    AdminLayout,
+    UserLayout,
+    DefaultLayout
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    currentLayout() {
+      // 인증되지 않은 사용자나 인증 페이지 - DefaultLayout
+      if (!this.authStore.isAuthenticated || this.isAuthPage) {
+        return 'DefaultLayout'
+      }
+      
+      // 관리자 - AdminLayout
+      if (this.authStore.isAdmin) {
+        return 'AdminLayout'
+      }
+      
+      // 일반 사용자 - UserLayout
+      return 'UserLayout'
+    },
+    isAuthPage() {
+      // 로그인/회원가입 페이지인지 확인
+      return ['/login', '/register'].includes(this.$route.path)
+    }
+  },
+  async created() {
+    // 앱 시작 시 토큰에서 사용자 정보 복원
+    const authStore = useAuthStore()
+    try {
+      await authStore.restoreUserFromToken()
+    } catch (error) {
+      console.warn('Failed to restore user from token:', error)
+    }
+  }
 }
 </script>
 

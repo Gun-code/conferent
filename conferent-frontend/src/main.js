@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
+import { useAuthStore } from './store/authStore'
 
 // CSS 스타일 import
 import './styles/index.css'
@@ -34,4 +35,18 @@ app.config.globalProperties.$formatDate = (date, format = 'datetime') => {
   }
 }
 
-app.mount('#app') 
+// 앱 시작 시 토큰 검증
+const initApp = async () => {
+  const authStore = useAuthStore()
+  
+  try {
+    // 토큰이 있으면 유효성 검증
+    await authStore.restoreUserFromToken()
+  } catch (error) {
+    console.error('Token validation failed on app start:', error)
+  }
+  
+  app.mount('#app')
+}
+
+initApp() 

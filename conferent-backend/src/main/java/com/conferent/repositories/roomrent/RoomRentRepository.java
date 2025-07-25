@@ -70,8 +70,17 @@ public interface RoomRentRepository extends JpaRepository<RoomRent, Long> {
                                               @Param("endTime") LocalDateTime endTime);
 
     /**
-     * 이용 가능한 회의실 조회
+     * 특정 시간대에 예약된 회의실들 조회 (기존 메서드 유지)
      */
     @Query("SELECT rr FROM RoomRent rr WHERE rr.room.id NOT IN (SELECT rr2.room.id FROM RoomRent rr2 WHERE rr2.rent.startTime <= :endTime AND rr2.rent.endTime >= :startTime)")
     List<RoomRent> findByAvailableRoom(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 특정 시간대에 이용 가능한 회의실들 조회 (Room 엔티티 직접 반환)
+     */
+    @Query("SELECT DISTINCT r FROM Room r WHERE r.id NOT IN " +
+           "(SELECT rr.room.id FROM RoomRent rr " +
+           "WHERE rr.rent.startTime < :endTime AND rr.rent.endTime > :startTime)")
+    List<Room> findAvailableRooms(@Param("startTime") LocalDateTime startTime, 
+                                  @Param("endTime") LocalDateTime endTime);
 } 

@@ -1,4 +1,20 @@
 services:
+  # MariaDB 데이터베이스
+  mariadb:
+    image: mariadb:10.11
+    container_name: conferent-mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: conferent
+      MYSQL_USER: conferent_user
+      MYSQL_PASSWORD: conferent_password
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+
   # Nginx 리버스 프록시
   nginx:
     build:
@@ -25,6 +41,8 @@ services:
       SPRING_PROFILES_ACTIVE: prod  # 프로덕션 환경
     expose:
       - "8080"
+    depends_on:
+      - mariadb
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -36,12 +54,15 @@ services:
       dockerfile: Dockerfile.prod  # 경량 Dockerfile 사용
     container_name: conferent-frontend
     environment:
-      VITE_API_BASE_URL: https://your-domain.com/api  # 실제 도메인으로 변경
+      VITE_API_BASE_URL: https://conferent.duckdns.org/api
     expose:
       - "3000"
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  mariadb_data:
 
 networks:
   default:

@@ -1,20 +1,25 @@
 # 운영환경 프로필 - 호스트 머신의 MariaDB 사용
 spring:
   datasource:
-    # Docker에서 호스트의 localhost에 접근
-    url: jdbc:mariadb://host.docker.internal:3306/conferent?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    # Docker Compose 내 MariaDB 서비스에 연결
+    url: jdbc:mariadb://mariadb:3306/conferent?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: conferent_user
     password: conferent_password
     driver-class-name: org.mariadb.jdbc.Driver
   
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update  # 프로덕션에서도 스키마 자동 생성/업데이트
     show-sql: false
+    defer-datasource-initialization: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MariaDBDialect
         format_sql: true
+  
+  sql:
+    init:
+      mode: never  # 이미 데이터가 존재하므로 초기화 스크립트 실행하지 않음
 
 # 운영환경 Swagger 설정 (제한적)
 springdoc:

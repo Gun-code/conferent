@@ -2,16 +2,18 @@
 -- application-dev.yml에서 hibernate.ddl-auto: create-drop로 설정되어 있어서
 -- 애플리케이션 시작 시 자동으로 실행됩니다
 
--- 사용자 데이터
+-- 사용자 데이터 (BCrypt 암호화된 비밀번호 사용)
+-- admin123 -> $2a$10$N.wmKMgmzYCRFQZS8/aOYeK0.VGdKGkXt8FkZsD0jH2LjF0VOP3I6
+-- user123 -> $2a$10$T8AvWxBgT8T6PYqY9I8nNeDqbT1HMSXnXd5THG7ZZYR.9UJ7KLW6G
 INSERT INTO users (name, email, password, role, created_at, updated_at) VALUES
-('관리자', 'admin@conferent.com', 'admin123', 'ADMIN', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-('홍길동', 'hong@conferent.com', 'user123', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-('김철수', 'kim@conferent.com', 'user123', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-('이영희', 'lee@conferent.com', 'user123', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-('박민수', 'park@conferent.com', 'user123', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-('정수진', 'jung@conferent.com', 'user123', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-('최동욱', 'choi@conferent.com', 'user123', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-('윤서연', 'yoon@conferent.com', 'user123', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+('관리자', 'admin@conferent.com', '$2a$10$N.wmKMgmzYCRFQZS8/aOYeK0.VGdKGkXt8FkZsD0jH2LjF0VOP3I6', 'ADMIN', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+('홍길동', 'hong@conferent.com', '$2a$10$T8AvWxBgT8T6PYqY9I8nNeDqbT1HMSXnXd5THG7ZZYR.9UJ7KLW6G', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+('김철수', 'kim@conferent.com', '$2a$10$T8AvWxBgT8T6PYqY9I8nNeDqbT1HMSXnXd5THG7ZZYR.9UJ7KLW6G', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+('이영희', 'lee@conferent.com', '$2a$10$T8AvWxBgT8T6PYqY9I8nNeDqbT1HMSXnXd5THG7ZZYR.9UJ7KLW6G', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+('박민수', 'park@conferent.com', '$2a$10$T8AvWxBgT8T6PYqY9I8nNeDqbT1HMSXnXd5THG7ZZYR.9UJ7KLW6G', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+('정수진', 'jung@conferent.com', '$2a$10$T8AvWxBgT8T6PYqY9I8nNeDqbT1HMSXnXd5THG7ZZYR.9UJ7KLW6G', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+('최동욱', 'choi@conferent.com', '$2a$10$T8AvWxBgT8T6PYqY9I8nNeDqbT1HMSXnXd5THG7ZZYR.9UJ7KLW6G', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+('윤서연', 'yoon@conferent.com', '$2a$10$T8AvWxBgT8T6PYqY9I8nNeDqbT1HMSXnXd5THG7ZZYR.9UJ7KLW6G', 'USER', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
 
 -- 회의실 데이터
 INSERT INTO rooms (name, location, capacity, description, created_at, updated_at) VALUES

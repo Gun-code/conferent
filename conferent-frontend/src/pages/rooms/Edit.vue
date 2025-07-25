@@ -134,7 +134,7 @@ export default {
       this.error = null
       
       try {
-        const response = await roomApiClient.getRoom(this.roomId)
+        const response = await roomApiClient.getById(this.roomId)
         this.room = response.data
         
         // 폼에 기존 데이터 설정
@@ -156,7 +156,7 @@ export default {
       this.saving = true
       
       try {
-        await roomApiClient.updateRoom(this.roomId, this.form)
+        await roomApiClient.update(this.roomId, this.form)
         this.$router.push(`/rooms/${this.roomId}`)
       } catch (err) {
         alert('회의실 수정에 실패했습니다.')

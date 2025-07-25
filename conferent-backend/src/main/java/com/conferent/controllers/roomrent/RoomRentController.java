@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -147,9 +148,9 @@ public class RoomRentController {
             @Parameter(description = "회의실 ID", example = "1")
             @RequestParam Long roomId,
             @Parameter(description = "시작 시간", example = "2024-01-15T14:00:00")
-            @RequestParam LocalDateTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
             @Parameter(description = "종료 시간", example = "2024-01-15T16:00:00")
-            @RequestParam LocalDateTime endTime) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
         List<RoomRentResponse> conflicts = roomRentService.findConflictingReservations(roomId, startTime, endTime).stream()
                 .map(RoomRentResponse::from)
                 .collect(java.util.stream.Collectors.toList());
@@ -191,11 +192,11 @@ public class RoomRentController {
     @Operation(summary = "이용 가능한 회의실 조회", description = "현재 이용 가능한 회의실 목록을 조회합니다.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "조회 성공",
-            content = @Content(schema = @Schema(implementation = RoomRentResponse.class)))
+            content = @Content(schema = @Schema(implementation = com.conferent.dtos.room.RoomResponse.class)))
     })
-    public ResponseEntity<List<RoomRentResponse>> getAvailableRooms() {
-        List<RoomRentResponse> rooms = roomRentService.getAvailableRooms().stream()
-                .map(RoomRentResponse::from)
+    public ResponseEntity<List<com.conferent.dtos.room.RoomResponse>> getAvailableRooms() {
+        List<com.conferent.dtos.room.RoomResponse> rooms = roomRentService.getAvailableRooms().stream()
+                .map(com.conferent.dtos.room.RoomResponse::from)
                 .collect(java.util.stream.Collectors.toList());
         return ResponseEntity.ok(rooms);
     }

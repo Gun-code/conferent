@@ -12,21 +12,21 @@
           <li class="header__nav-item">
             <router-link to="/" class="header__nav-link">홈</router-link>
           </li>
-          <li class="header__nav-item">
+          <li v-if="authStore.isAuthenticated" class="header__nav-item">
             <router-link to="/rooms" class="header__nav-link">회의실</router-link>
           </li>
-          <li class="header__nav-item">
+          <li v-if="authStore.isAuthenticated" class="header__nav-item">
             <router-link to="/reservations" class="header__nav-link">예약</router-link>
           </li>
-          <li class="header__nav-item">
+          <li v-if="authStore.isAdmin" class="header__nav-item">
             <router-link to="/admin" class="header__nav-link">관리</router-link>
           </li>
         </ul>
       </nav>
 
       <div class="header__user">
-        <div v-if="isLoggedIn" class="header__user-info">
-          <span class="header__user-name">{{ userName }}</span>
+        <div v-if="authStore.isAuthenticated" class="header__user-info">
+          <span class="header__user-name">{{ authStore.userName }}</span>
           <BaseButton 
             variant="secondary" 
             size="small" 
@@ -51,26 +51,34 @@
 
 <script>
 import BaseButton from '@/components/base/BaseButton.vue'
+import { useAuthStore } from '@/store/authStore.js'
 
 export default {
   name: 'Header',
   components: {
     BaseButton
   },
-  data() {
-    return {
-      isLoggedIn: false,
-      userName: '사용자'
+  computed: {
+    authStore() {
+      return useAuthStore()
     }
   },
   methods: {
     handleLogin() {
-      // 로그인 로직 구현
-      console.log('로그인 클릭')
+      // 로그인 페이지로 이동
+      this.$router.push('/login')
     },
-    handleLogout() {
-      // 로그아웃 로직 구현
-      console.log('로그아웃 클릭')
+    async handleLogout() {
+      try {
+        // authStore의 logout 액션 사용
+        await this.authStore.logout()
+        
+        // 홈으로 이동
+        this.$router.push('/')
+      } catch (error) {
+        console.error('Logout failed:', error)
+        alert('로그아웃에 실패했습니다.')
+      }
     }
   }
 }

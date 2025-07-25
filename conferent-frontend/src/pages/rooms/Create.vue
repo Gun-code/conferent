@@ -104,7 +104,7 @@ export default {
       this.loading = true
       
       try {
-        await roomApiClient.createRoom(this.form)
+        await roomApiClient.create(this.form)
         this.$router.push('/rooms')
       } catch (err) {
         alert('회의실 생성에 실패했습니다.')

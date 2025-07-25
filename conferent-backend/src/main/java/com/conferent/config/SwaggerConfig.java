@@ -20,7 +20,7 @@ public class SwaggerConfig {
         devServer.setDescription("개발 서버");
         
         Server prodServer = new Server();
-        prodServer.setUrl("https://conferent.com");
+        prodServer.setUrl("https://conferent.duckdns.org");
         prodServer.setDescription("운영 서버");
         
         Contact contact = new Contact();

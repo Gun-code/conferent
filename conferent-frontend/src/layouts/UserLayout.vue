@@ -59,22 +59,29 @@
           </div>
           
           <div v-if="isAuthenticated" class="user-header__user">
-            <div class="user-header__notifications">
+            <!-- <div class="user-header__notifications">
               <button class="user-header__notification-btn">
                 🔔
                 <span v-if="notificationCount > 0" class="user-header__notification-badge">
                   {{ notificationCount }}
                 </span>
               </button>
-            </div>
+            </div> -->
             
             <div class="user-header__user-menu">
-              <button class="user-header__user-menu-btn">
+              <button 
+                class="user-header__user-menu-btn"
+                @click="toggleUserMenu"
+                :class="{ 'user-header__user-menu-btn--active': isUserMenuOpen }"
+              >
                 <span class="user-header__user-avatar">👤</span>
                 <span class="user-header__user-name">{{ userName }}</span>
                 <span class="user-header__user-arrow">▼</span>
               </button>
-              <div class="user-header__user-dropdown">
+              <div 
+                v-show="isUserMenuOpen"
+                class="user-header__user-dropdown"
+              >
                 <router-link to="/profile" class="user-header__user-dropdown-item">
                   프로필
                 </router-link>
@@ -163,32 +170,29 @@
 </template>
 
 <script>
+import { useAuthStore } from '@/store/authStore.js'
 
 export default {
   name: 'UserLayout',
   data() {
     return {
       searchQuery: '',
-      isAuthenticated: false,
-      userName: '사용자',
-      notificationCount: 2
+      notificationCount: 2,
+      isUserMenuOpen: false
     }
   },
-  mounted() {
-    // 인증 상태 확인
-    this.checkAuthStatus()
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    isAuthenticated() {
+      return this.authStore.isAuthenticated
+    },
+    userName() {
+      return this.authStore.userName || '사용자'
+    }
   },
   methods: {
-    checkAuthStatus() {
-      const token = localStorage.getItem('token')
-      this.isAuthenticated = !!token
-      
-      if (this.isAuthenticated) {
-        // 실제로는 API에서 사용자 정보를 가져와야 함
-        this.userName = '홍길동'
-      }
-    },
-    
     handleSearch() {
       if (this.searchQuery.trim()) {
         this.$router.push({
@@ -198,11 +202,38 @@ export default {
       }
     },
     
-    handleLogout() {
-      localStorage.removeItem('token')
-      this.isAuthenticated = false
-      this.$router.push('/')
+    toggleUserMenu() {
+      this.isUserMenuOpen = !this.isUserMenuOpen
+    },
+    
+    async handleLogout() {
+      try {
+        await this.authStore.logout()
+        this.isUserMenuOpen = false // 드롭다운 닫기
+        this.$router.push('/')
+      } catch (error) {
+        console.error('Logout failed:', error)
+        alert('로그아웃에 실패했습니다.')
+      }
+    },
+    
+    handleOutsideClick(event) {
+      // 드롭다운 외부 클릭 시 닫기
+      const userMenu = this.$el.querySelector('.user-header__user-menu')
+      if (userMenu && !userMenu.contains(event.target)) {
+        this.isUserMenuOpen = false
+      }
     }
+  },
+  
+  mounted() {
+    // 외부 클릭 시 드롭다운 닫기
+    document.addEventListener('click', this.handleOutsideClick)
+  },
+  
+  beforeDestroy() {
+    // 이벤트 리스너 제거
+    document.removeEventListener('click', this.handleOutsideClick)
   }
 }
 </script>
@@ -407,7 +438,15 @@ export default {
   display: none;
 }
 
-.user-header__user-menu:hover .user-header__user-dropdown {
+.user-header__user-menu-btn--active {
+  background-color: #f1f5f9;
+}
+
+.user-header__user-dropdown {
+  display: none;
+}
+
+.user-header__user-dropdown[v-show="true"] {
   display: block;
 }
 

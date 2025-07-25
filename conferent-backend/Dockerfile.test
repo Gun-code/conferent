@@ -1,0 +1,15 @@
+# 테스트용 Dockerfile - 개발 환경 최적화
+FROM gradle:8.5-jdk17-alpine
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 빌드 스크립트와 소스 코드 복사
+COPY build.gradle .
+COPY src src
+
+# 개발 모드로 실행 (빌드하지 않고 직접 실행)
+EXPOSE 8080
+
+# Gradle을 사용하여 개발 모드로 실행
+CMD ["gradle", "bootRun", "--no-daemon"] 

@@ -1,18 +1,14 @@
 import axios from 'axios'
+import apiConfig from './config.js'
+import { logError, extractErrorMessage } from '@/utils/errorHandler.js'
 
 /**
  * API 클라이언트 인스턴스
  * @type {import('axios').AxiosInstance}
  */
-const apiClient = axios.create({
-  baseURL: '/api',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
-})
+const apiClient = axios.create(apiConfig)
 
-// 요청 인터셉터 - 사용자 ID 헤더 추가
+// 요청 인터셉터 - 인증 토큰 및 사용자 ID 헤더 추가
 apiClient.interceptors.request.use(
   /**
    * 요청 설정 수정
@@ -20,10 +16,12 @@ apiClient.interceptors.request.use(
    * @returns {import('axios').AxiosRequestConfig} 수정된 요청 설정
    */
   (config) => {
-    const userId = localStorage.getItem('userId')
-    if (userId) {
-      config.headers['X-User-Id'] = userId
+    // JWT 토큰 추가
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`
     }
+    
     return config
   },
   /**
@@ -32,7 +30,7 @@ apiClient.interceptors.request.use(
    * @returns {Promise<never>} 거부된 Promise
    */
   (error) => {
-    console.error('Request interceptor error:', error)
+    logError(error, 'API Request')
     return Promise.reject(error)
   }
 )
@@ -51,19 +49,17 @@ apiClient.interceptors.response.use(
    * @returns {Promise<never>} 거부된 Promise
    */
   (error) => {
-    if (error.response) {
-      // 서버 응답이 있는 경우
-      console.error('API Error:', {
-        status: error.response.status,
-        data: error.response.data,
-        url: error.config?.url
-      })
-    } else if (error.request) {
-      // 요청은 했지만 응답이 없는 경우
-      console.error('Network Error:', error.message)
-    } else {
-      // 요청 설정 중 오류
-      console.error('Request Setup Error:', error.message)
+    // 에러 로깅
+    logError(error, 'API Response')
+    
+    // 401 에러 시 자동 로그아웃
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('userId')
+      localStorage.removeItem('userName')
+      localStorage.removeItem('userEmail')
+      localStorage.removeItem('userRole')
+      window.location.href = '/login'
     }
     
     return Promise.reject(error)

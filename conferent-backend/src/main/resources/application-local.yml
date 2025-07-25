@@ -1,0 +1,45 @@
+# 로컬 테스트 환경 프로필 - Docker MariaDB 사용
+spring:
+  datasource:
+    # Docker Compose 내 MariaDB 서비스에 연결
+    url: jdbc:mariadb://mariadb:3306/conferent?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: conferent_user
+    password: conferent_password
+    driver-class-name: org.mariadb.jdbc.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # 로컬 테스트에서는 매번 새로 생성
+    show-sql: true
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+        format_sql: true
+  
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data-mariadb.sql
+
+# 로컬 테스트용 Swagger 설정
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    try-it-out-enabled: true
+    display-request-duration: true
+    display-operation-id: true
+  show-actuator: true
+
+# 로컬 테스트용 로깅 레벨
+logging:
+  level:
+    com.conferent: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# 로컬 테스트 서버 포트
+server:
+  port: 8080 

@@ -19,11 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -44,9 +39,6 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class AuthController {
 
-    // Spring Security의 인증 매니저 (로그인 검증 담당)
-    private final AuthenticationManager authenticationManager;
-    
     // JWT 토큰 생성/검증 담당 컴포넌트
     private final JwtTokenProvider jwtTokenProvider;
     
@@ -75,19 +67,23 @@ public class AuthController {
         try {
             log.info("로그인 시도 - 이메일: {}", loginRequest.getEmail());
             
-            // 1. Spring Security를 통한 사용자 인증
-            Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    loginRequest.getEmail(),      // 사용자명 (이메일)
-                    loginRequest.getPassword()    // 비밀번호
-                )
+            // 1. UserService를 통한 직접 사용자 인증
+            boolean isAuthenticated = userService.authenticateUser(
+                loginRequest.getEmail(), 
+                loginRequest.getPassword()
             );
+            
+            if (!isAuthenticated) {
+                log.warn("로그인 실패 - 잘못된 인증 정보: {}", loginRequest.getEmail());
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("이메일 또는 비밀번호가 올바르지 않습니다.");
+            }
             
             // 2. 인증 성공 시 사용자 정보 조회
             UserResponse user = userService.getUserByEmail(loginRequest.getEmail());
             
-            // 3. JWT 토큰 생성
-            String token = jwtTokenProvider.createToken(authentication);
+            // 3. JWT 토큰 생성 (사용자명 기반)
+            String token = jwtTokenProvider.createToken(loginRequest.getEmail());
             
             // 4. 토큰 만료 시간 계산
             java.time.LocalDateTime expiresAt = jwtTokenProvider.getExpirationDate(token);
@@ -106,18 +102,6 @@ public class AuthController {
             
             return ResponseEntity.ok(loginResponse);
             
-        } catch (BadCredentialsException e) {
-            // 이메일 또는 비밀번호가 틀린 경우
-            log.warn("로그인 실패 - 잘못된 인증 정보: {}", loginRequest.getEmail());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("이메일 또는 비밀번호가 올바르지 않습니다.");
-                    
-        } catch (AuthenticationException e) {
-            // 기타 인증 오류
-            log.error("로그인 실패 - 인증 오류: {}, 사용자: {}", e.getMessage(), loginRequest.getEmail());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("인증에 실패했습니다.");
-                    
         } catch (Exception e) {
             // 예상하지 못한 서버 오류
             log.error("로그인 중 서버 오류 발생: {}, 사용자: {}", e.getMessage(), loginRequest.getEmail());
@@ -266,6 +250,61 @@ public class AuthController {
             log.error("토큰 검증 중 오류 발생: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("토큰 검증 중 오류가 발생했습니다.");
+        }
+    }
+
+    /**
+     * 사용자 로그아웃 API
+     * JWT 기반 인증에서는 서버 측에서 특별한 처리가 필요하지 않지만,
+     * 클라이언트 요청을 처리하기 위한 엔드포인트
+     * 
+     * @param authorization Authorization 헤더 (Bearer 토큰)
+     * @return 로그아웃 성공 응답
+     */
+    @PostMapping("/logout")
+    @Operation(summary = "사용자 로그아웃", description = "사용자 로그아웃을 처리합니다. (JWT 토큰 무효화)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+        @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+    })
+    public ResponseEntity<?> logout(
+            @Parameter(description = "JWT 토큰", example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        
+        try {
+            if (authorization != null) {
+                String token = jwtTokenProvider.resolveToken(authorization);
+                if (token != null && jwtTokenProvider.validateToken(token)) {
+                    String email = jwtTokenProvider.getUsername(token);
+                    log.info("로그아웃 처리 - 사용자: {}", email);
+                }
+            }
+            
+            // JWT 기반 인증에서는 서버 측에서 토큰을 무효화할 수 없으므로
+            // 클라이언트에서 토큰을 삭제하도록 안내하는 응답
+            return ResponseEntity.ok(new LogoutResponse(true, "로그아웃이 완료되었습니다."));
+            
+        } catch (Exception e) {
+            log.error("로그아웃 처리 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new LogoutResponse(false, "로그아웃 처리 중 오류가 발생했습니다."));
+        }
+    }
+
+    /**
+     * 로그아웃 응답 내부 클래스
+     */
+    @Schema(description = "로그아웃 응답")
+    public static class LogoutResponse {
+        @Schema(description = "로그아웃 성공 여부")
+        public boolean success;
+        
+        @Schema(description = "응답 메시지")
+        public String message;
+
+        public LogoutResponse(boolean success, String message) {
+            this.success = success;
+            this.message = message;
         }
     }
 

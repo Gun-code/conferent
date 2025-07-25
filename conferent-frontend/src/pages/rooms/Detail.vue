@@ -1,6 +1,5 @@
 <template>
-  <UserLayout>
-    <div class="room-detail">
+  <div class="room-detail">
       <div v-if="loading" class="room-detail__loading">
         <p>회의실 정보를 불러오는 중...</p>
       </div>
@@ -109,11 +108,9 @@
         </div>
       </div>
     </div>
-  </UserLayout>
 </template>
 
 <script>
-import UserLayout from '@/layouts/UserLayout.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import { roomApiClient, rentApiClient } from '@/api'
 import { formatDate } from '@/utils/date'
@@ -121,7 +118,6 @@ import { formatDate } from '@/utils/date'
 export default {
   name: 'RoomDetail',
   components: {
-    UserLayout,
     BaseButton
   },
   data() {
@@ -143,7 +139,7 @@ export default {
       
       try {
         const roomId = this.$route.params.id
-        const response = await roomApiClient.getRoom(roomId)
+        const response = await roomApiClient.getById(roomId)
         this.room = response.data
       } catch (err) {
         this.error = '회의실 정보를 불러오는데 실패했습니다.'
@@ -157,7 +153,7 @@ export default {
       try {
         const roomId = this.$route.params.id
         const today = new Date().toISOString().split('T')[0]
-        const response = await rentApiClient.getRentsByRoomAndDate(roomId, today)
+        const response = await rentApiClient.getByRoom(roomId)
         this.todayReservations = response.data
       } catch (err) {
         console.error('Failed to load reservations:', err)

@@ -1,5 +1,4 @@
 <template>
-  <UserLayout>
     <div class="reservation-create">
       <div class="reservation-create__header">
         <div class="reservation-create__breadcrumb">
@@ -112,6 +111,16 @@
             ></textarea>
           </div>
 
+          <!-- 에러 알림 -->
+          <BaseAlert
+            v-if="showError"
+            :show="showError"
+            type="error"
+            :message="errorMessage"
+            @close="clearError"
+            class="mb-4"
+          />
+
           <!-- 시간 충돌 경고 -->
           <div v-if="timeConflict" class="form-warning">
             ⚠️ 선택한 시간에 다른 예약이 있습니다. 다른 시간을 선택해주세요.
@@ -159,19 +168,20 @@
         </form>
       </div>
     </div>
-  </UserLayout>
 </template>
 
 <script>
-import UserLayout from '@/layouts/UserLayout.vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
+import BaseAlert from '@/components/base/BaseAlert.vue'
 import { roomApiClient, rentApiClient } from '@/api'
+import { extractErrorMessage } from '@/utils/errorHandler.js'
 
 export default {
   name: 'ReservationCreate',
   components: {
-    UserLayout,
-    BaseButton
+    BaseButton,
+    BaseAlert
   },
   data() {
     return {
@@ -187,7 +197,9 @@ export default {
         purpose: '',
         attendees: '',
         description: ''
-      }
+      },
+      showError: false,
+      errorMessage: ''
     }
   },
   computed: {
@@ -202,7 +214,7 @@ export default {
   methods: {
     async loadRooms() {
       try {
-        const response = await roomApiClient.getAllRooms()
+        const response = await roomApiClient.getAll()
         this.rooms = response.data
       } catch (err) {
         console.error('Failed to load rooms:', err)
@@ -241,12 +253,14 @@ export default {
       }
       
       try {
-        const response = await rentApiClient.checkConflict({
-          roomId: this.form.roomId,
-          date: this.form.date,
-          startTime: this.form.startTime,
-          endTime: this.form.endTime
-        })
+        const startDateTime = `${this.form.date}T${this.form.startTime}`
+        const endDateTime = `${this.form.date}T${this.form.endTime}`
+        
+        const response = await rentApiClient.checkTimeConflict(
+          [this.form.roomId],
+          startDateTime,
+          endDateTime
+        )
         this.timeConflict = response.data.hasConflict
       } catch (err) {
         console.error('Failed to check time conflict:', err)
@@ -254,19 +268,27 @@ export default {
     },
     
     async handleSubmit() {
+      // 에러 초기화
+      this.showError = false
+      this.errorMessage = ''
       this.loading = true
       
       try {
         const reservationData = {
-          ...this.form,
-          startDateTime: `${this.form.date}T${this.form.startTime}`,
-          endDateTime: `${this.form.date}T${this.form.endTime}`
+          startTime: `${this.form.date}T${this.form.startTime}`,
+          endTime: `${this.form.date}T${this.form.endTime}`,
+          purpose: this.form.purpose,
+          description: this.form.description,
+          creatorId: parseInt(this.$store?.state?.user?.id || localStorage.getItem('userId')),
+          roomIds: [this.form.roomId],
+          inviteeIds: [] // 참석 인원은 별도 필드이므로 빈 배열로 설정
         }
         
-        await rentApiClient.createRent(reservationData)
+        await rentApiClient.create(reservationData)
         this.$router.push('/reservations')
       } catch (err) {
-        alert('예약 생성에 실패했습니다.')
+        this.showError = true
+        this.errorMessage = extractErrorMessage(err)
         console.error('Failed to create reservation:', err)
       } finally {
         this.loading = false
@@ -275,6 +297,11 @@ export default {
     
     handleCancel() {
       this.$router.push('/reservations')
+    },
+    
+    clearError() {
+      this.showError = false
+      this.errorMessage = ''
     }
   }
 }

@@ -67,5 +67,5 @@ public interface RoomRentService {
     /**
      * 이용 가능한 회의실 조회
      */
-    List<RoomRent> getAvailableRooms();
+    List<Room> getAvailableRooms();
 } 

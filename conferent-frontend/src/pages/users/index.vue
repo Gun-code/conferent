@@ -1,5 +1,4 @@
 <template>
-  <UserLayout>
     <div class="user-list">
       <div class="user-list__header">
         <h1 class="user-list__title">사용자 목록</h1>
@@ -112,11 +111,10 @@
         </div>
       </div>
     </div>
-  </UserLayout>
 </template>
 
 <script>
-import UserLayout from '@/layouts/UserLayout.vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
 import { userApiClient } from '@/api'
 import { formatDate } from '@/utils/date'
@@ -124,7 +122,7 @@ import { formatDate } from '@/utils/date'
 export default {
   name: 'UserList',
   components: {
-    UserLayout,
+
     BaseButton
   },
   data() {
@@ -168,7 +166,7 @@ export default {
       this.error = null
       
       try {
-        const response = await userApiClient.getAllUsers()
+        const response = await userApiClient.getAll()
         this.users = response.data
       } catch (err) {
         this.error = '사용자 목록을 불러오는데 실패했습니다.'
@@ -222,7 +220,7 @@ export default {
     async handleDeleteUser(user) {
       if (confirm(`정말로 "${user.name}" 사용자를 삭제하시겠습니까?`)) {
         try {
-          await userApiClient.deleteUser(user.id)
+          await userApiClient.delete(user.id)
           this.users = this.users.filter(u => u.id !== user.id)
         } catch (err) {
           alert('사용자 삭제에 실패했습니다.')

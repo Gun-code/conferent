@@ -102,7 +102,9 @@ public class SecurityConfig {
             "http://localhost:3000",      // Vite 개발 서버
             "http://localhost:80",        // Nginx 개발 환경
             "https://conferent.com",      // 운영 환경
-            "https://*.conferent.com"     // 서브도메인 포함
+            "https://*.conferent.com",    // 서브도메인 포함
+            "https://conferent.duckdns.org", // DuckDNS 도메인
+            "https://*.duckdns.org"       // DuckDNS 서브도메인
         ));
         
         // 허용할 HTTP 메서드
@@ -168,6 +170,9 @@ public class SecurityConfig {
                 // 인증 불필요한 공개 엔드포인트
                 .requestMatchers(
                     "/api/auth/**",           // 로그인, 회원가입
+                    "/api/rooms/**",          // 회의실 목록 조회
+                    "/api/room-rents/available", // 이용 가능한 회의실 조회 (홈페이지용)
+                    "/api/rents/date-range",  // 날짜 범위별 예약 조회 (홈페이지용)
                     "/api-docs/**",           // Swagger API 문서
                     "/swagger-ui/**",         // Swagger UI
                     "/swagger-ui.html",       // Swagger UI 메인

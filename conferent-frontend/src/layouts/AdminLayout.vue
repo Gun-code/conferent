@@ -99,24 +99,33 @@
         </div>
         
         <div class="admin-header__right">
-          <div class="admin-header__notifications">
+          <!-- <div class="admin-header__notifications">
             <button class="admin-header__notification-btn">
               🔔
               <span class="admin-header__notification-badge">3</span>
             </button>
           </div>
-          
+           -->
           <div class="admin-header__user">
             <div class="admin-header__user-info">
-              <span class="admin-header__user-name">관리자</span>
-              <span class="admin-header__user-role">시스템 관리자</span>
+              <span class="admin-header__user-name">{{ userName }}</span>
+              <span class="admin-header__user-role">{{ userRole }}</span>
             </div>
             <div class="admin-header__user-avatar">
               👤
             </div>
             <div class="admin-header__user-menu">
-              <button class="admin-header__user-menu-btn">▼</button>
-              <div class="admin-header__user-dropdown">
+              <button 
+                class="admin-header__user-menu-btn" 
+                @click="toggleUserMenu"
+                :class="{ 'admin-header__user-menu-btn--active': isUserMenuOpen }"
+              >
+                ▼
+              </button>
+              <div 
+                v-show="isUserMenuOpen"
+                class="admin-header__user-dropdown"
+              >
                 <a href="#" class="admin-header__user-dropdown-item">프로필</a>
                 <a href="#" class="admin-header__user-dropdown-item">설정</a>
                 <a href="#" class="admin-header__user-dropdown-item" @click="handleLogout">로그아웃</a>
@@ -135,14 +144,26 @@
 </template>
 
 <script>
+import { useAuthStore } from '@/store/authStore.js'
+
 export default {
   name: 'AdminLayout',
   data() {
     return {
-      sidebarCollapsed: false
+      sidebarCollapsed: false,
+      isUserMenuOpen: false
     }
   },
   computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    userName() {
+      return this.authStore.userName || '관리자'
+    },
+    userRole() {
+      return this.authStore.userRole === 'ADMIN' ? '시스템 관리자' : '사용자'
+    },
     pageTitle() {
       const routeNames = {
         '/admin': '대시보드',
@@ -160,11 +181,38 @@ export default {
       this.sidebarCollapsed = !this.sidebarCollapsed
     },
     
-    handleLogout() {
-      // 로그아웃 로직
-      localStorage.removeItem('token')
-      this.$router.push('/login')
+    toggleUserMenu() {
+      this.isUserMenuOpen = !this.isUserMenuOpen
+    },
+    
+    async handleLogout() {
+      try {
+        await this.authStore.logout()
+        this.isUserMenuOpen = false // 드롭다운 닫기
+        this.$router.push('/login')
+      } catch (error) {
+        console.error('Logout failed:', error)
+        alert('로그아웃에 실패했습니다.')
+      }
+    },
+    
+    handleOutsideClick(event) {
+      // 드롭다운 외부 클릭 시 닫기
+      const userMenu = this.$el.querySelector('.admin-header__user-menu')
+      if (userMenu && !userMenu.contains(event.target)) {
+        this.isUserMenuOpen = false
+      }
     }
+  },
+  
+  mounted() {
+    // 외부 클릭 시 드롭다운 닫기
+    document.addEventListener('click', this.handleOutsideClick)
+  },
+  
+  beforeDestroy() {
+    // 이벤트 리스너 제거
+    document.removeEventListener('click', this.handleOutsideClick)
   }
 }
 </script>
@@ -412,7 +460,16 @@ export default {
   display: none;
 }
 
-.admin-header__user-menu:hover .admin-header__user-dropdown {
+.admin-header__user-menu-btn--active {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.admin-header__user-dropdown {
+  display: none;
+}
+
+.admin-header__user-dropdown[v-show="true"] {
   display: block;
 }
 

@@ -1,5 +1,4 @@
 <template>
-  <UserLayout>
     <div class="not-found">
       <div class="not-found__content">
         <h1 class="not-found__title">404</h1>
@@ -23,17 +22,16 @@
         </div>
       </div>
     </div>
-  </UserLayout>
 </template>
 
 <script>
-import UserLayout from '@/layouts/UserLayout.vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
 
 export default {
   name: 'NotFound',
   components: {
-    UserLayout,
+
     BaseButton
   },
   methods: {

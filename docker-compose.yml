@@ -24,9 +24,9 @@ services:
     environment:
       # 프로필을 환경변수로 설정 (기본값: dev)
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
-    # 내부 네트워크에서만 접근 가능 (Nginx를 통해서만 접근)
-    expose:
-      - "8080"
+    # 로컬 테스트를 위해 포트 노출
+    ports:
+      - "8080:8080"
     # 호스트 네트워크에 접근할 수 있도록 설정
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -40,9 +40,9 @@ services:
     container_name: conferent-frontend
     environment:
       VITE_API_BASE_URL: http://localhost/api
-    # 내부 네트워크에서만 접근 가능 (Nginx를 통해서만 접근)
-    expose:
-      - "3000"
+    # 로컬 테스트를 위해 포트 노출
+    ports:
+      - "3000:3000"
     depends_on:
       - backend
     restart: unless-stopped

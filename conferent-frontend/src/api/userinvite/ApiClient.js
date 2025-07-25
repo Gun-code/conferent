@@ -1,128 +1,179 @@
-import apiClient from '@/api/ApiClient';
+import apiClient from '@/api/ApiClient'
 
 /**
- * UserInvite API 클라이언트
- * 사용자 초대 관리 API
+ * 사용자 초대 API 클라이언트
  */
 export const userInviteApiClient = {
   /**
    * 모든 사용자 초대 목록 조회
    * GET /api/user-invites
-   * @returns {Promise<Array>} 사용자 초대 목록
+   * @returns {Promise} 초대 목록
    */
-  getAllUserInvites: () => apiClient.get('/api/user-invites'),
+  async getAll() {
+    const response = await apiClient.get('/user-invites')
+    return response
+  },
 
   /**
-   * ID로 사용자 초대 조회
+   * 사용자 초대 상세 조회
    * GET /api/user-invites/{id}
-   * @param {number} id - 사용자 초대 ID
-   * @returns {Promise<Object>} 사용자 초대 정보
+   * @param {number} id - 초대 ID
+   * @returns {Promise} 초대 상세 정보
    */
-  getUserInviteById: (id) => apiClient.get(`/api/user-invites/${id}`),
+  async getById(id) {
+    const response = await apiClient.get(`/user-invites/${id}`)
+    return response
+  },
 
   /**
-   * 사용자별 초대 목록 조회
+   * 사용자별 초대 조회
    * GET /api/user-invites/user/{userId}
    * @param {number} userId - 사용자 ID
-   * @returns {Promise<Array>} 조건에 맞는 초대 목록
+   * @returns {Promise} 사용자별 초대 목록
    */
-  getUserInvitesByUser: (userId) => apiClient.get(`/api/user-invites/user/${userId}`),
+  async getByUserId(userId) {
+    const response = await apiClient.get(`/user-invites/user/${userId}`)
+    return response
+  },
 
   /**
-   * 예약별 초대 목록 조회
+   * 예약별 초대 조회
    * GET /api/user-invites/rent/{rentId}
    * @param {number} rentId - 예약 ID
-   * @returns {Promise<Array>} 조건에 맞는 초대 목록
+   * @returns {Promise} 예약별 초대 목록
    */
-  getUserInvitesByRent: (rentId) => apiClient.get(`/api/user-invites/rent/${rentId}`),
+  async getByRentId(rentId) {
+    const response = await apiClient.get(`/user-invites/rent/${rentId}`)
+    return response
+  },
 
   /**
    * 사용자별 상태별 초대 조회
    * GET /api/user-invites/user/{userId}/status/{status}
    * @param {number} userId - 사용자 ID
-   * @param {string} status - 초대 상태 (PENDING/ACCEPTED/DECLINED)
-   * @returns {Promise<Array>} 조건에 맞는 초대 목록
+   * @param {string} status - 초대 상태 (PENDING, ACCEPTED, DECLINED)
+   * @returns {Promise} 상태별 초대 목록
    */
-  getUserInvitesByUserAndStatus: (userId, status) => 
-    apiClient.get(`/api/user-invites/user/${userId}/status/${status}`),
+  async getByUserIdAndStatus(userId, status) {
+    const response = await apiClient.get(`/user-invites/user/${userId}/status/${status.toUpperCase()}`)
+    return response
+  },
 
   /**
-   * 사용자 초대 생성
-   * POST /api/user-invites
-   * @param {Object} inviteData - 초대 생성 데이터
-   * @param {number} inviteData.userId - 사용자 ID
-   * @param {number} inviteData.roomRentId - 회의실-예약 연결 ID
-   * @returns {Promise<Object>} 생성된 초대 정보
-   */
-  createUserInvite: (inviteData) => apiClient.post('/api/user-invites', inviteData),
-
-  /**
-   * 초대 상태 업데이트
-   * PUT /api/user-invites/{id}/status
-   * @param {number} id - 사용자 초대 ID
-   * @param {string} status - 새로운 상태 (PENDING/ACCEPTED/DECLINED)
-   * @returns {Promise<Object>} 업데이트된 초대 정보
-   */
-  updateInviteStatus: (id, status) => 
-    apiClient.put(`/api/user-invites/${id}/status`, null, { params: { status } }),
-
-  /**
-   * 사용자 초대 삭제
-   * DELETE /api/user-invites/{id}
-   * @param {number} id - 사용자 초대 ID
-   * @returns {Promise<void>}
-   */
-  deleteUserInvite: (id) => apiClient.delete(`/api/user-invites/${id}`),
-
-  /**
-   * 사용자별 모든 초대 삭제
-   * DELETE /api/user-invites/user/{userId}
+   * 대기 중인 초대 개수 조회
+   * GET /api/user-invites/user/{userId}/pending-count
    * @param {number} userId - 사용자 ID
-   * @returns {Promise<void>}
+   * @returns {Promise} 대기 중인 초대 개수
    */
-  deleteByUser: (userId) => apiClient.delete(`/api/user-invites/user/${userId}`),
+  async getPendingCount(userId) {
+    const response = await apiClient.get(`/user-invites/user/${userId}/pending-count`)
+    return response
+  },
 
   /**
-   * RoomRent별 모든 초대 삭제
-   * DELETE /api/user-invites/room-rent/{roomRentId}
-   * @param {number} roomRentId - 회의실-예약 연결 ID
-   * @returns {Promise<void>}
+   * 수락된 초대 개수 조회
+   * GET /api/user-invites/rent/{rentId}/accepted-count
+   * @param {number} rentId - 예약 ID
+   * @returns {Promise} 수락된 초대 개수
    */
-  deleteByRoomRent: (roomRentId) => apiClient.delete(`/api/user-invites/room-rent/${roomRentId}`),
+  async getAcceptedCountForRent(rentId) {
+    const response = await apiClient.get(`/user-invites/rent/${rentId}/accepted-count`)
+    return response
+  },
 
   /**
    * 초대 존재 여부 확인
    * GET /api/user-invites/exists
    * @param {number} userId - 사용자 ID
-   * @param {number} roomRentId - 회의실-예약 연결 ID
-   * @returns {Promise<boolean>} 존재 여부
+   * @param {number} roomRentId - RoomRent ID
+   * @returns {Promise} 초대 존재 여부
    */
-  existsByUserAndRoomRent: (userId, roomRentId) => 
-    apiClient.get('/api/user-invites/exists', { params: { userId, roomRentId } }),
+  async exists(userId, roomRentId) {
+    const params = new URLSearchParams({
+      userId: userId,
+      roomRentId: roomRentId
+    })
+    const response = await apiClient.get(`/user-invites/exists?${params}`)
+    return response
+  },
 
   /**
-   * 특정 사용자와 RoomRent의 초대 조회
+   * 초대 조회
    * GET /api/user-invites/find
    * @param {number} userId - 사용자 ID
-   * @param {number} roomRentId - 회의실-예약 연결 ID
-   * @returns {Promise<Object>} 초대 정보
+   * @param {number} roomRentId - RoomRent ID
+   * @returns {Promise} 초대 정보
    */
-  findByUserAndRoomRent: (userId, roomRentId) => 
-    apiClient.get('/api/user-invites/find', { params: { userId, roomRentId } }),
+  async findByUserIdAndRoomRentId(userId, roomRentId) {
+    const params = new URLSearchParams({
+      userId: userId,
+      roomRentId: roomRentId
+    })
+    const response = await apiClient.get(`/user-invites/find?${params}`)
+    return response
+  },
 
   /**
-   * 사용자별 대기 중인 초대 개수 조회
-   * GET /api/user-invites/user/{userId}/pending-count
+   * 사용자 초대 생성
+   * POST /api/user-invites
    * @param {number} userId - 사용자 ID
-   * @returns {Promise<number>} 대기 중인 초대 개수
+   * @param {number} roomRentId - RoomRent ID
+   * @returns {Promise} 생성된 초대 정보
    */
-  countPendingInvitesByUser: (userId) => apiClient.get(`/api/user-invites/user/${userId}/pending-count`),
+  async create(userId, roomRentId) {
+    const params = new URLSearchParams({
+      userId: userId,
+      roomRentId: roomRentId
+    })
+    const response = await apiClient.post(`/user-invites?${params}`)
+    return response
+  },
 
   /**
-   * 예약별 수락된 초대 개수 조회
-   * GET /api/user-invites/rent/{rentId}/accepted-count
-   * @param {number} rentId - 예약 ID
-   * @returns {Promise<number>} 수락된 초대 개수
+   * 초대 상태 업데이트
+   * PUT /api/user-invites/{id}/status
+   * @param {number} id - 초대 ID
+   * @param {string} status - 새로운 상태 (PENDING, ACCEPTED, DECLINED)
+   * @returns {Promise} 업데이트된 초대 정보
    */
-  countAcceptedInvitesForRent: (rentId) => apiClient.get(`/api/user-invites/rent/${rentId}/accepted-count`)
-}; 
+  async updateStatus(id, status) {
+    const params = new URLSearchParams({
+      status: status.toUpperCase()
+    })
+    const response = await apiClient.put(`/user-invites/${id}/status?${params}`)
+    return response
+  },
+
+  /**
+   * 사용자 초대 삭제
+   * DELETE /api/user-invites/{id}
+   * @param {number} id - 초대 ID
+   * @returns {Promise} 삭제 응답
+   */
+  async delete(id) {
+    const response = await apiClient.delete(`/user-invites/${id}`)
+    return response
+  },
+
+  /**
+   * 사용자별 초대 삭제
+   * DELETE /api/user-invites/user/{userId}
+   * @param {number} userId - 사용자 ID
+   * @returns {Promise} 삭제 응답
+   */
+  async deleteByUserId(userId) {
+    const response = await apiClient.delete(`/user-invites/user/${userId}`)
+    return response
+  },
+
+  /**
+   * RoomRent별 초대 삭제
+   * DELETE /api/user-invites/room-rent/{roomRentId}
+   * @param {number} roomRentId - RoomRent ID
+   * @returns {Promise} 삭제 응답
+   */
+  async deleteByRoomRentId(roomRentId) {
+    const response = await apiClient.delete(`/user-invites/room-rent/${roomRentId}`)
+    return response
+  }
+} 

@@ -1,5 +1,4 @@
 <template>
-  <UserLayout>
     <div class="reservation-detail">
       <div v-if="loading" class="reservation-detail__loading">
         <p>예약 정보를 불러오는 중...</p>
@@ -134,11 +133,10 @@
         </div>
       </div>
     </div>
-  </UserLayout>
 </template>
 
 <script>
-import UserLayout from '@/layouts/UserLayout.vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
 import { rentApiClient } from '@/api'
 import { formatDate } from '@/utils/date'
@@ -146,7 +144,7 @@ import { formatDate } from '@/utils/date'
 export default {
   name: 'ReservationDetail',
   components: {
-    UserLayout,
+
     BaseButton
   },
   data() {
@@ -180,7 +178,7 @@ export default {
       this.error = null
       
       try {
-        const response = await rentApiClient.getRent(this.reservationId)
+        const response = await rentApiClient.getById(this.reservationId)
         this.reservation = response.data
       } catch (err) {
         this.error = '예약 정보를 불러오는데 실패했습니다.'
@@ -192,7 +190,7 @@ export default {
     
     async loadReservationHistory() {
       try {
-        const response = await rentApiClient.getRentHistory(this.reservationId)
+        const response = await rentApiClient.getById(this.reservationId)
         this.reservationHistory = response.data
       } catch (err) {
         console.error('Failed to load reservation history:', err)
@@ -238,7 +236,7 @@ export default {
     async handleCancel() {
       if (confirm('정말로 이 예약을 취소하시겠습니까?')) {
         try {
-          await rentApiClient.cancelRent(this.reservationId)
+          await rentApiClient.delete(this.reservationId)
           this.loadReservation() // 상태 새로고침
         } catch (err) {
           alert('예약 취소에 실패했습니다.')
